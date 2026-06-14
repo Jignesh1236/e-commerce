@@ -78,8 +78,8 @@ export default function AdminProducts() {
       const files = fileRef.current?.files
       if (files) for (let f of files) fd.append('images', f)
       if (removedImages.length) removedImages.forEach(url => fd.append('removeImages', url))
-      if (editing) await api.put(`/products/${editing}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      else await api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      if (editing) await api.put(`/products/${editing}`, fd)
+      else await api.post('/products', fd)
       setShowForm(false)
       setPreviewFiles([])
       load()

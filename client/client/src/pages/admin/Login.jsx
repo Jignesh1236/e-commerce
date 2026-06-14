@@ -51,7 +51,7 @@ export default function AdminLogin() {
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
             style={{
               background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-              boxShadow: '0 4px 16px rgba(46,125,50,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+              boxShadow: '0 4px 16px rgba(234,88,12,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}>
             🔐
           </div>
@@ -89,21 +89,27 @@ export default function AdminLogin() {
                 <button key={key} onClick={() => press(key)} disabled={loading}
                   className="h-14 rounded-2xl text-lg font-bold transition-all duration-100 select-none active:scale-95"
                   style={isEnter ? {
-                    background: 'linear-gradient(180deg, #3da03d 0%, #2e7d32 60%, #276b2c 100%)',
-                    border: '1px solid #1b5e20',
-                    borderBottomWidth: 2,
+                    background: 'linear-gradient(180deg, #f97316 0%, #ea580c 60%, #dc4a00 100%)',
+                    borderTop: '1px solid #c2410c',
+                    borderLeft: '1px solid #c2410c',
+                    borderRight: '1px solid #c2410c',
+                    borderBottom: '2px solid #c2410c',
                     color: 'white',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 8px rgba(46,125,50,0.4)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 8px rgba(234,88,12,0.4)',
                   } : isAction ? {
                     background: 'linear-gradient(180deg, var(--surface-raised), var(--surface-card))',
-                    border: '1px solid var(--border)',
-                    borderBottomWidth: 2,
+                    borderTop: '1px solid var(--border)',
+                    borderLeft: '1px solid var(--border)',
+                    borderRight: '1px solid var(--border)',
+                    borderBottom: '2px solid var(--border)',
                     color: 'var(--text-muted)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), var(--shadow-sm)',
                   } : {
                     background: 'linear-gradient(180deg, var(--surface-raised), var(--surface-card))',
-                    border: '1px solid var(--border)',
-                    borderBottomWidth: 2,
+                    borderTop: '1px solid var(--border)',
+                    borderLeft: '1px solid var(--border)',
+                    borderRight: '1px solid var(--border)',
+                    borderBottom: '2px solid var(--border)',
                     color: 'var(--text)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), var(--shadow-sm)',
                   }}>

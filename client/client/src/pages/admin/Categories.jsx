@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import api from '../../utils/api'
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiCheck, FiTag } from 'react-icons/fi'
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiCheck, FiTag, FiHome } from 'react-icons/fi'
 
-const EMPTY = { name: '', icon: '', order: 0, active: true }
+const EMPTY = { name: '', icon: '', order: 0, active: true, showInHero: false }
 
 const EMOJI_SUGGESTIONS = ['🥦','🥕','🍎','🍌','🥩','🐔','🐟','🥛','🧀','🥚','🍞','🌾','🫙','🧴','🧹','🛒','🍫','🍬','🌿','🫚','🧄','🧅','🍅','🌽','🫑','🥑','🍋','🍊','🍇','🥝']
 
@@ -25,7 +25,7 @@ export default function AdminCategories() {
   const openAdd = () => { setEditing(null); setForm(EMPTY); setShowForm(true) }
   const openEdit = (c) => {
     setEditing(c._id)
-    setForm({ name: c.name, icon: c.icon || '', order: c.order || 0, active: c.active !== false })
+    setForm({ name: c.name, icon: c.icon || '', order: c.order || 0, active: c.active !== false, showInHero: c.showInHero === true })
     setShowForm(true)
   }
 
@@ -53,6 +53,13 @@ export default function AdminCategories() {
   const toggleActive = async (cat) => {
     try {
       const r = await api.put(`/categories/${cat._id}`, { ...cat, active: !cat.active })
+      setCats(c => c.map(x => x._id === cat._id ? r.data.category : x))
+    } catch {}
+  }
+
+  const toggleHero = async (cat) => {
+    try {
+      const r = await api.put(`/categories/${cat._id}`, { showInHero: !cat.showInHero })
       setCats(c => c.map(x => x._id === cat._id ? r.data.category : x))
     } catch {}
   }
@@ -102,7 +109,7 @@ export default function AdminCategories() {
                 {cat.icon || '📦'}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-bold truncate"
                     style={{ color: cat.active ? 'var(--text)' : 'var(--text-muted)' }}>
                     {cat.name}
@@ -113,17 +120,36 @@ export default function AdminCategories() {
                       Hidden
                     </span>
                   )}
+                  {cat.showInHero && (
+                    <span className="sku-badge text-xs"
+                      style={{ background: 'rgba(234,88,12,0.1)', color: 'var(--primary)', border: '1px solid rgba(234,88,12,0.25)' }}>
+                      🏠 Hero
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                   Order: {cat.order || 0}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
+                <button onClick={() => toggleHero(cat)}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                  style={{
+                    background: cat.showInHero
+                      ? 'linear-gradient(135deg,#ea580c,#c2410c)'
+                      : 'linear-gradient(180deg, var(--surface-raised), var(--surface-card))',
+                    border: `1px solid ${cat.showInHero ? '#c2410c' : 'var(--border)'}`,
+                    color: cat.showInHero ? 'white' : 'var(--text-muted)',
+                    boxShadow: 'var(--shadow-sm)'
+                  }}
+                  title={cat.showInHero ? 'Remove from Hero' : 'Show in Hero'}>
+                  <FiHome size={13} />
+                </button>
                 <button onClick={() => toggleActive(cat)}
                   className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-105"
                   style={{
                     background: cat.active
-                      ? 'linear-gradient(135deg,#2e7d32,#1b5e20)'
+                      ? 'linear-gradient(135deg,#ea580c,#c2410c)'
                       : 'linear-gradient(180deg, var(--surface-raised), var(--surface-card))',
                     border: '1px solid var(--border)',
                     color: cat.active ? 'white' : 'var(--text-muted)',
@@ -222,6 +248,27 @@ export default function AdminCategories() {
                 <span className="text-sm font-semibold">
                   {form.active ? 'Visible in store' : 'Hidden from store'}
                 </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer select-none p-3 rounded-xl"
+                style={{ background: form.showInHero ? 'rgba(234,88,12,0.06)' : 'var(--surface-inset)', border: `1px solid ${form.showInHero ? 'rgba(234,88,12,0.3)' : 'var(--border)'}` }}>
+                <div className="relative w-10 h-6">
+                  <input type="checkbox" checked={form.showInHero}
+                    onChange={e => setForm(f => ({ ...f, showInHero: e.target.checked }))}
+                    className="sr-only" />
+                  <div className="w-10 h-6 rounded-full transition-colors duration-200"
+                    style={{ background: form.showInHero ? 'var(--primary)' : 'var(--border)' }} />
+                  <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
+                    style={{ transform: form.showInHero ? 'translateX(16px)' : 'translateX(0)' }} />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold block">
+                    {form.showInHero ? '🏠 Shown in Hero' : '🏠 Show in Hero'}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Appears in home page banner sidebar
+                  </span>
+                </div>
               </label>
 
               <button onClick={save} disabled={saving} className="sku-btn w-full">

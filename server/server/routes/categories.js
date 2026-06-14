@@ -37,12 +37,13 @@ router.put('/:id', adminAuth, async (req, res, next) => {
     const category = await Category.findById(req.params.id);
     if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
 
-    const { name, icon, order, active } = req.body;
+    const { name, icon, order, active, showInHero } = req.body;
 
     if (name !== undefined) category.name = name.trim();
     if (icon !== undefined) category.icon = icon;
     if (order !== undefined) category.order = Number(order);
     if (active !== undefined) category.active = active === true || active === 'true';
+    if (showInHero !== undefined) category.showInHero = showInHero === true || showInHero === 'true';
 
     await category.save();
     res.json({ success: true, category });

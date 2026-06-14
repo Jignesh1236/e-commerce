@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const configSchema = new mongoose.Schema({
+  storeName: { type: String, default: 'My Store' },
+  tagline: { type: String, default: '' },
+  logo: { type: String, default: '' },
   whatsappNumber: { type: String, default: '' },
   deliveryCharge: { type: Number, default: 0 },
   freeDeliveryAbove: { type: Number, default: 500 },

@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', adminAuth, upload.single('image'), async (req, res, next) => {
   try {
-    const { title, link, order, active } = req.body;
+    const { title, link, order, active, objectPosition } = req.body;
 
     if (!req.file) return res.status(400).json({ success: false, message: 'Image is required' });
 
@@ -28,7 +28,8 @@ router.post('/', adminAuth, upload.single('image'), async (req, res, next) => {
       title: title || '',
       link: link || '',
       order: Number(order) || 0,
-      active: active !== 'false' && active !== false
+      active: active !== 'false' && active !== false,
+      objectPosition: objectPosition || '50% 50%'
     });
 
     res.status(201).json({ success: true, banner });

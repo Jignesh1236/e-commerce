@@ -10,7 +10,7 @@ import { optimizeImage } from '../utils/cloudinary'
 
 export default function Cart() {
   const { items, updateQty, removeItem, clearCart, total, count } = useCart()
-  const { user } = useUser()
+  const { user, syncUserFromOrder } = useUser()
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState(false)
   const [config, setConfig] = useState(null)
@@ -40,6 +40,7 @@ export default function Cart() {
         deliveryCharge,
         address,
       })
+      syncUserFromOrder(address)
       const msg = buildWhatsAppMessage({ user, address, items, total, deliveryCharge })
       openWhatsApp(config?.whatsappNumber || '919999999999', msg)
       clearCart()

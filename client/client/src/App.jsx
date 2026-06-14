@@ -62,10 +62,10 @@ function RequireOnboarding({ children }) {
   return children
 }
 
-function StoreLayout({ children, storeName }) {
+function StoreLayout({ children, storeName, storeLogo }) {
   return (
     <div className="min-h-screen" style={{ background: 'var(--surface)' }}>
-      <Navbar storeName={storeName} />
+      <Navbar storeName={storeName} storeLogo={storeLogo} />
       <main>{children}</main>
       <BottomNav />
       <PWAInstallPrompt />
@@ -74,21 +74,23 @@ function StoreLayout({ children, storeName }) {
   )
 }
 
-function StoreRoute({ children, storeName }) {
+function StoreRoute({ children, storeName, storeLogo }) {
   return (
     <RequireOnboarding>
-      <StoreLayout storeName={storeName}>{children}</StoreLayout>
+      <StoreLayout storeName={storeName} storeLogo={storeLogo}>{children}</StoreLayout>
     </RequireOnboarding>
   )
 }
 
 export default function App() {
   const [storeName, setStoreName] = useState('My Store')
+  const [storeLogo, setStoreLogo] = useState('')
 
   useEffect(() => {
     api.get('/config').then(r => {
-      const name = (r.data.config || r.data)?.storeName
-      if (name) setStoreName(name)
+      const c = r.data.config || r.data
+      if (c?.storeName) setStoreName(c.storeName)
+      if (c?.logo) setStoreLogo(c.logo)
     }).catch(() => {})
   }, [])
 
@@ -100,15 +102,15 @@ export default function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/privacy-policy" element={<StoreLayout storeName={storeName}><PrivacyPolicy /></StoreLayout>} />
-                <Route path="/terms-of-service" element={<StoreLayout storeName={storeName}><TermsOfService /></StoreLayout>} />
-                <Route path="/" element={<StoreRoute storeName={storeName}><Home /></StoreRoute>} />
-                <Route path="/product/:id" element={<StoreRoute storeName={storeName}><ProductDetail /></StoreRoute>} />
-                <Route path="/cart" element={<StoreRoute storeName={storeName}><Cart /></StoreRoute>} />
-                <Route path="/wishlist" element={<StoreRoute storeName={storeName}><Wishlist /></StoreRoute>} />
-                <Route path="/orders" element={<StoreRoute storeName={storeName}><Orders /></StoreRoute>} />
-                <Route path="/order-success" element={<StoreRoute storeName={storeName}><OrderSuccess /></StoreRoute>} />
-                <Route path="/about" element={<StoreRoute storeName={storeName}><About /></StoreRoute>} />
+                <Route path="/privacy-policy" element={<StoreLayout storeName={storeName} storeLogo={storeLogo}><PrivacyPolicy /></StoreLayout>} />
+                <Route path="/terms-of-service" element={<StoreLayout storeName={storeName} storeLogo={storeLogo}><TermsOfService /></StoreLayout>} />
+                <Route path="/" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><Home /></StoreRoute>} />
+                <Route path="/product/:id" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><ProductDetail /></StoreRoute>} />
+                <Route path="/cart" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><Cart /></StoreRoute>} />
+                <Route path="/wishlist" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><Wishlist /></StoreRoute>} />
+                <Route path="/orders" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><Orders /></StoreRoute>} />
+                <Route path="/order-success" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><OrderSuccess /></StoreRoute>} />
+                <Route path="/about" element={<StoreRoute storeName={storeName} storeLogo={storeLogo}><About /></StoreRoute>} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Navigate to="/admin/dashboard" replace />} />
@@ -122,7 +124,7 @@ export default function App() {
                   <Route path="config" element={<AdminConfig />} />
                 </Route>
                 <Route path="*" element={
-                  <StoreRoute storeName={storeName}>
+                  <StoreRoute storeName={storeName} storeLogo={storeLogo}>
                     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
                       <p className="text-6xl mb-4">🔍</p>
                       <h1 className="text-2xl font-bold mb-2">Page not found</h1>

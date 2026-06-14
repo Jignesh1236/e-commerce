@@ -66,7 +66,7 @@ export default function AdminLayout() {
             <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl font-bold text-white shrink-0"
               style={{
                 background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-                boxShadow: '0 3px 10px rgba(46,125,50,0.4)',
+                boxShadow: '0 3px 10px rgba(234,88,12,0.4)',
               }}>
               🛒
             </div>
@@ -91,7 +91,7 @@ export default function AdminLayout() {
               }
               style={({ isActive }) => isActive ? {
                 background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-                boxShadow: '0 2px 8px rgba(46,125,50,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+                boxShadow: '0 2px 8px rgba(234,88,12,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
                 color: 'white',
               } : { color: 'var(--text)' }}>
               <span className="text-base w-5 text-center">{emoji}</span>
@@ -108,7 +108,7 @@ export default function AdminLayout() {
               }
               style={({ isActive }) => isActive ? {
                 background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-                boxShadow: '0 2px 8px rgba(46,125,50,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+                boxShadow: '0 2px 8px rgba(234,88,12,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
                 color: 'white',
               } : { color: 'var(--text)' }}>
               <span className="text-base w-5 text-center">{emoji}</span>

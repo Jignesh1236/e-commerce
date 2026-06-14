@@ -44,7 +44,7 @@ export default function ProductCard({ product }) {
           )}
           {product.freeDelivery && !outOfStock && (
             <span className="sku-badge text-white"
-              style={{ background: 'linear-gradient(135deg,#2e7d32,#1b5e20)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+              style={{ background: 'linear-gradient(135deg,#ea580c,#c2410c)', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
               Free Delivery
             </span>
           )}

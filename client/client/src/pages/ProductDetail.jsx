@@ -293,7 +293,7 @@ export default function ProductDetail() {
 
             {avgRating && (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg,#2e7d32,#1b5e20)' }}>
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg,#ea580c,#c2410c)' }}>
                   <FiStar size={12} fill="white" color="white" />
                   <span className="text-sm font-bold text-white">{avgRating}</span>
                 </div>
@@ -371,7 +371,7 @@ export default function ProductDetail() {
             </div>
 
             <div className="hidden md:flex items-center gap-3 p-4 rounded-2xl"
-              style={{ background: 'var(--primary-glow)', border: '1px solid rgba(46,125,50,0.2)' }}>
+              style={{ background: 'var(--primary-glow)', border: '1px solid rgba(234,88,12,0.2)' }}>
               <span className="text-2xl">💬</span>
               <div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--primary)' }}>Order via WhatsApp</p>

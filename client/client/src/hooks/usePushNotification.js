@@ -12,23 +12,40 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray
 }
 
+const notificationsSupported = () =>
+  typeof window !== 'undefined' &&
+  'Notification' in window &&
+  'serviceWorker' in navigator &&
+  'PushManager' in window
+
 export function usePushNotification(userId) {
-  const [permission, setPermission] = useState(Notification.permission)
+  const [permission, setPermission] = useState(() => {
+    if (!notificationsSupported()) return 'denied'
+    return Notification.permission
+  })
   const [subscribed, setSubscribed] = useState(false)
+  const [vapidAvailable, setVapidAvailable] = useState(true)
 
   useEffect(() => {
-    if (!userId) return
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+    if (!userId || !notificationsSupported()) return
+    navigator.serviceWorker.ready
+      .then(async (reg) => {
+        const existing = await reg.pushManager.getSubscription()
+        if (existing) setSubscribed(true)
+      })
+      .catch(() => {})
 
-    navigator.serviceWorker.ready.then(async (registration) => {
-      const existing = await registration.pushManager.getSubscription()
-      if (existing) setSubscribed(true)
-    }).catch(() => {})
+    api.get('/push/vapid-key')
+      .then(res => setVapidAvailable(!!res.data.publicKey))
+      .catch(() => setVapidAvailable(false))
   }, [userId])
 
   const subscribe = async () => {
-    if (!userId) return false
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false
+    if (!userId || !notificationsSupported()) return false
+    if (!vapidAvailable) {
+      console.warn('Push notifications not configured on server')
+      return false
+    }
 
     try {
       const perm = await Notification.requestPermission()
@@ -42,7 +59,7 @@ export function usePushNotification(userId) {
       const registration = await navigator.serviceWorker.ready
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey)
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       })
 
       await api.post('/push/subscribe', { userId, subscription })
@@ -67,5 +84,5 @@ export function usePushNotification(userId) {
     }
   }
 
-  return { permission, subscribed, subscribe, unsubscribe }
+  return { permission, subscribed, vapidAvailable, subscribe, unsubscribe }
 }
