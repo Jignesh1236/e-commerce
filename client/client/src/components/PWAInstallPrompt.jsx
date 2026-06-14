@@ -22,8 +22,13 @@ export default function PWAInstallPrompt() {
     if (!deferredPrompt) return
     deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
-    if (outcome === 'accepted') setShow(false)
     setDeferredPrompt(null)
+    if (outcome === 'accepted') {
+      setShow(false)
+    } else {
+      setShow(false)
+      sessionStorage.setItem('pwaDismissed', '1')
+    }
   }
 
   const dismiss = () => {

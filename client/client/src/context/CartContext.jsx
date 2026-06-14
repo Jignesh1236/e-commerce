@@ -35,7 +35,11 @@ export function CartProvider({ children }) {
 
   const updateQty = (productId, qty) => {
     if (qty < 1) { removeItem(productId); return }
-    setItems(prev => prev.map(i => i.productId === productId ? { ...i, qty } : i))
+    setItems(prev => prev.map(i => {
+      if (i.productId !== productId) return i
+      const safeQty = i.stock ? Math.min(qty, i.stock) : qty
+      return { ...i, qty: safeQty }
+    }))
   }
 
   const clearCart = () => setItems([])

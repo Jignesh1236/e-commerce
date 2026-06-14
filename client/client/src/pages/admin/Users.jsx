@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FiChevronDown, FiChevronUp, FiPackage, FiUser, FiPhone, FiMapPin, FiClock } from 'react-icons/fi'
 import api from '../../utils/api'
 
@@ -102,19 +102,24 @@ function UserOrderHistory({ userId }) {
 function UserRow({ user, idx, total }) {
   const [expanded, setExpanded] = useState(false)
   const [orderCount, setOrderCount] = useState(null)
+  const fetchedRef = useRef(false)
 
-  useEffect(() => {
-    api.get(`/orders/user/${user._id}`)
-      .then(r => setOrderCount((r.data.orders || []).length))
-      .catch(() => setOrderCount(0))
-  }, [user._id])
+  const handleExpand = () => {
+    setExpanded(v => !v)
+    if (!fetchedRef.current) {
+      fetchedRef.current = true
+      api.get(`/orders/user/${user._id}`)
+        .then(r => setOrderCount((r.data.orders || []).length))
+        .catch(() => setOrderCount(0))
+    }
+  }
 
   return (
     <>
       <tr
         className="transition-colors cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
         style={{ borderBottom: (expanded || idx < total - 1) ? '1px solid var(--border)' : 'none' }}
-        onClick={() => setExpanded(v => !v)}>
+        onClick={handleExpand}>
         <td className="px-4 py-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
             style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid rgba(46,125,50,0.2)' }}>

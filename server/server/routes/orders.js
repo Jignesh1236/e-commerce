@@ -38,6 +38,16 @@ router.get('/user/:userId', async (req, res, next) => {
   }
 });
 
+router.get('/:id', async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/', adminAuth, async (req, res, next) => {
   try {
     const { status, startDate, endDate, page = 1, limit = 50 } = req.query;

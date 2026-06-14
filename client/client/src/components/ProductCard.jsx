@@ -114,7 +114,8 @@ export default function ProductCard({ product }) {
               <span className="font-extrabold text-sm" style={{ color: 'var(--text)' }}>{cartItem.qty}</span>
               <button
                 onClick={() => updateQty(product._id, cartItem.qty + 1)}
-                className="w-10 h-9 flex items-center justify-center transition-colors hover:bg-black/5 active:bg-black/10"
+                disabled={product.stock > 0 && cartItem.qty >= product.stock}
+                className="w-10 h-9 flex items-center justify-center transition-colors hover:bg-black/5 active:bg-black/10 disabled:opacity-30 disabled:cursor-not-allowed"
                 style={{ color: 'var(--primary)' }}>
                 <FiPlus size={14} strokeWidth={3} />
               </button>

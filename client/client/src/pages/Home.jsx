@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { FiSearch, FiX, FiChevronRight, FiPlus, FiMinus, FiHeart, FiClock, FiChevronLeft, FiFilter, FiZap } from 'react-icons/fi'
 import api from '../utils/api'
 import { useUser } from '../context/UserContext'
+import { useConfig } from '../context/ConfigContext'
 import useAutoRefresh from '../hooks/useAutoRefresh'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
@@ -89,7 +90,8 @@ function ProductCard({ product, compact = false }) {
               </button>
               <span className="font-extrabold text-xs" style={{ color: 'var(--text)' }}>{cartItem.qty}</span>
               <button onClick={() => updateQty(product._id, cartItem.qty + 1)}
-                className="w-8 h-7 flex items-center justify-center hover:bg-black/5 transition-colors" style={{ color: 'var(--primary)' }}>
+                disabled={product.stock > 0 && cartItem.qty >= product.stock}
+                className="w-8 h-7 flex items-center justify-center hover:bg-black/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" style={{ color: 'var(--primary)' }}>
                 <FiPlus size={11} strokeWidth={3} />
               </button>
             </div>
@@ -144,6 +146,7 @@ function HorizontalRow({ title, products, onViewAll }) {
 
 export default function Home() {
   const { user } = useUser()
+  const { config } = useConfig()
   const [searchParams, setSearchParams] = useSearchParams()
   const [banners, setBanners] = useState([])
   const [categories, setCategories] = useState([])
@@ -153,12 +156,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [storeName, setStoreName] = useState('Quick Store')
-  const [storeTagline, setStoreTagline] = useState('Fresh products, fast delivery')
-  const [minP, setMinP] = useState('')
-  const [maxP, setMaxP] = useState('')
+  const [minP, setMinP] = useState(() => searchParams.get('minPrice') || '')
+  const [maxP, setMaxP] = useState(() => searchParams.get('maxPrice') || '')
   const [showMobileFilter, setShowMobileFilter] = useState(false)
   const [heroBannerIdx, setHeroBannerIdx] = useState(0)
+  const categoryRowsLoaded = useRef(false)
+
+  const storeName = config?.storeName || 'Quick Store'
+  const storeTagline = config?.tagline || 'Fresh products, fast delivery'
 
   const search = searchParams.get('search') || ''
   const category = searchParams.get('category') || ''
@@ -191,7 +196,10 @@ export default function Home() {
       const prods = data.products || data.data?.products || []
       setProducts(prev => replace ? prods : [...prev, ...prods])
       setHasMore(pageNum < (data.pagination?.pages || 1))
-    } finally { setLoading(false) }
+    } catch {
+      if (replace) setProducts([])
+    } finally {
+      setLoading(false) }
   }, [search, category, sort, minPrice, maxPrice])
 
   const loadMeta = useCallback(() => {
@@ -199,21 +207,20 @@ export default function Home() {
     api.get('/categories').then(r => {
       const cats = r.data.categories || r.data || []
       setCategories(cats)
-      cats.slice(0, 4).forEach(cat => {
-        api.get(`/products?category=${encodeURIComponent(cat.name)}&limit=10`)
-          .then(r => setCategoryRows(prev => ({ ...prev, [cat.name]: r.data.products || [] })))
-          .catch(() => {})
-      })
-    }).catch(() => {})
-    api.get('/config').then(r => {
-      const c = r.data.config || r.data
-      if (c?.storeName) setStoreName(c.storeName)
-      if (c?.tagline) setStoreTagline(c.tagline)
+      if (!categoryRowsLoaded.current) {
+        categoryRowsLoaded.current = true
+        cats.slice(0, 4).forEach(cat => {
+          api.get(`/products?category=${encodeURIComponent(cat.name)}&limit=10`)
+            .then(r => setCategoryRows(prev => ({ ...prev, [cat.name]: r.data.products || [] })))
+            .catch(() => {})
+        })
+      }
     }).catch(() => {})
     api.get('/products/featured').then(r => setFeaturedProducts(r.data.products || [])).catch(() => {})
   }, [])
 
   const refreshProducts = useCallback(() => loadProducts(1, true), [loadProducts])
+  useEffect(() => { setMinP(minPrice); setMaxP(maxPrice) }, [minPrice, maxPrice])
   useEffect(() => { loadMeta() }, [loadMeta])
   useEffect(() => { loadProducts(1, true) }, [loadProducts])
   useAutoRefresh(refreshProducts, 30000)
@@ -221,14 +228,13 @@ export default function Home() {
 
   useEffect(() => {
     if (banners.length <= 1) return
+    setHeroBannerIdx(0)
     const t = setInterval(() => setHeroBannerIdx(i => (i + 1) % banners.length), 4000)
     return () => clearInterval(t)
   }, [banners.length])
 
-  useEffect(() => { setHeroBannerIdx(0) }, [banners.length])
-
   const activeBanner = banners[heroBannerIdx] || null
-  const loadMore = () => { const n = page + 1; setPage(n); loadProducts(n, false) }
+  const loadMore = () => { if (loading) return; const n = page + 1; setPage(n); loadProducts(n, false) }
   const activeCat = categories.find(c => c.name === category)
 
   return (
@@ -237,7 +243,6 @@ export default function Home() {
       {/* ── HERO BANNER (only when not filtering) ── */}
       {!isFiltered && (
         <div className="relative overflow-hidden" style={{ minHeight: 220 }}>
-          {/* Background */}
           {banners.length > 0 ? banners.map((b, i) => (
             <div key={b._id || i} className="absolute inset-0 transition-opacity duration-700"
               style={{ opacity: i === heroBannerIdx ? 1 : 0, zIndex: 0 }}>
@@ -249,17 +254,14 @@ export default function Home() {
               style={{ background: 'linear-gradient(135deg, #c2410c 0%, #ea580c 60%, #f97316 100%)', zIndex: 0 }} />
           )}
 
-          {/* Gradient overlay */}
           <div className="absolute inset-0" style={{
             background: 'linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.1) 100%)',
             zIndex: 1
           }} />
 
-          {/* Decorative glow */}
           <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full opacity-20 blur-3xl pointer-events-none"
             style={{ background: '#fb923c', zIndex: 1 }} />
 
-          {/* Content */}
           <div className="relative max-w-6xl mx-auto px-5 py-10 md:py-14 flex flex-col md:flex-row md:items-center gap-6" style={{ zIndex: 2 }}>
             <div className="flex-1 min-w-0">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black mb-3 uppercase tracking-wider"
@@ -296,7 +298,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Desktop categories quick-jump */}
             {(() => {
               const heroCategories = categories.filter(c => c.showInHero)
               const displayCategories = heroCategories.length > 0 ? heroCategories : categories.slice(0, 6)
@@ -317,7 +318,6 @@ export default function Home() {
             })()}
           </div>
 
-          {/* Pagination dots */}
           {banners.length > 1 && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5" style={{ zIndex: 3 }}>
               {banners.map((_, i) => (
@@ -420,7 +420,6 @@ export default function Home() {
           <div className="md:flex md:gap-6">
             <div className="flex-1 min-w-0">
 
-              {/* ── CATEGORIES (mobile horizontal scroll) ── */}
               {categories.length > 0 && (
                 <section className="mb-6">
                   <div className="flex items-center justify-between mb-3">
@@ -448,7 +447,6 @@ export default function Home() {
                 </section>
               )}
 
-              {/* ── FEATURED PRODUCTS (horizontal row) ── */}
               {featuredProducts.length > 0 && (
                 <section className="mb-6 -mx-4 px-4 py-5 rounded-none md:rounded-2xl"
                   style={{ background: 'rgba(234,88,12,0.06)', borderTop: '1px solid rgba(234,88,12,0.12)', borderBottom: '1px solid rgba(234,88,12,0.12)' }}>
@@ -460,7 +458,6 @@ export default function Home() {
                 </section>
               )}
 
-              {/* ── PER-CATEGORY ROWS ── */}
               {categories.slice(0, 4).map(cat => (
                 categoryRows[cat.name]?.length > 0 && (
                   <HorizontalRow
@@ -472,7 +469,6 @@ export default function Home() {
                 )
               ))}
 
-              {/* ── ALL PRODUCTS GRID ── */}
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="font-black text-base tracking-tight" style={{ color: 'var(--text)' }}>Daily Essentials</h2>
                 <div className="flex items-center gap-2">
@@ -519,7 +515,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Desktop sidebar */}
             <aside className="hidden lg:flex flex-col gap-4 shrink-0" style={{ width: 220 }}>
               <div className="sku-card p-4 sticky top-24">
                 <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Sort</p>
@@ -554,7 +549,6 @@ export default function Home() {
           </div>
 
         ) : (
-          /* ── FILTERED VIEW ── */
           <div className="md:flex md:gap-6">
             <div className="flex-1 min-w-0">
               {activeCat && (
@@ -602,7 +596,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Desktop sidebar for filtered view */}
             <aside className="hidden lg:flex flex-col gap-4 shrink-0" style={{ width: 220 }}>
               <div className="sku-card p-4 sticky top-24">
                 <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Categories</p>

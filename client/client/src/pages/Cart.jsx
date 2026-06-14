@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { FiTrash2, FiPlus, FiMinus, FiShoppingBag } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
 import { useUser } from '../context/UserContext'
+import { useConfig } from '../context/ConfigContext'
 import AddressModal from '../components/AddressModal'
 import api from '../utils/api'
 import { buildWhatsAppMessage, openWhatsApp } from '../utils/whatsapp'
@@ -11,37 +12,30 @@ import { optimizeImage } from '../utils/cloudinary'
 export default function Cart() {
   const { items, updateQty, removeItem, clearCart, total, count } = useCart()
   const { user, syncUserFromOrder } = useUser()
+  const { config } = useConfig()
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState(false)
-  const [config, setConfig] = useState(null)
   const [placing, setPlacing] = useState(false)
 
-  const loadConfig = async () => {
-    if (!config) {
-      const r = await api.get('/config')
-      setConfig(r.data.config || r.data)
-    }
-  }
+  const freeDeliveryAbove = config?.freeDeliveryAbove ?? 500
+  const deliveryCharge = config ? (total >= freeDeliveryAbove ? 0 : config.deliveryCharge || 0) : null
 
-  const handlePlaceOrder = async () => {
-    await loadConfig()
-    setShowModal(true)
-  }
+  const handlePlaceOrder = () => setShowModal(true)
 
   const handleConfirm = async (address) => {
     if (!user) return
     setPlacing(true)
     try {
-      const deliveryCharge = total >= (config?.freeDeliveryAbove || 500) ? 0 : (config?.deliveryCharge || 0)
+      const charge = total >= freeDeliveryAbove ? 0 : (config?.deliveryCharge || 0)
       await api.post('/orders', {
         userId: user._id,
         items: items.map(i => ({ productId: i.productId, name: i.name, qty: i.qty, price: i.price })),
         totalAmount: total,
-        deliveryCharge,
+        deliveryCharge: charge,
         address,
       })
       syncUserFromOrder(address)
-      const msg = buildWhatsAppMessage({ user, address, items, total, deliveryCharge })
+      const msg = buildWhatsAppMessage({ user, address, items, total, deliveryCharge: charge })
       openWhatsApp(config?.whatsappNumber || '919999999999', msg)
       clearCart()
       setShowModal(false)
@@ -52,9 +46,6 @@ export default function Cart() {
       setPlacing(false)
     }
   }
-
-  const deliveryCharge = config ? (total >= (config.freeDeliveryAbove || 500) ? 0 : config.deliveryCharge || 0) : 0
-  const freeDeliveryAbove = config?.freeDeliveryAbove || 500
 
   if (!items.length) return (
     <div className="max-w-lg mx-auto p-4 pb-nav flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -85,7 +76,9 @@ export default function Cart() {
                     <FiMinus size={13} style={{ color: 'var(--primary)' }} />
                   </button>
                   <span className="text-sm font-bold w-5 text-center">{item.qty}</span>
-                  <button onClick={() => updateQty(item.productId, item.qty + 1)}>
+                  <button onClick={() => updateQty(item.productId, item.qty + 1)}
+                    disabled={item.stock > 0 && item.qty >= item.stock}
+                    style={{ opacity: (item.stock > 0 && item.qty >= item.stock) ? 0.3 : 1, cursor: (item.stock > 0 && item.qty >= item.stock) ? 'not-allowed' : 'pointer' }}>
                     <FiPlus size={13} style={{ color: 'var(--primary)' }} />
                   </button>
                 </div>
@@ -100,7 +93,7 @@ export default function Cart() {
       </div>
 
       <div className="sku-card p-4 mb-4">
-        {total < freeDeliveryAbove && (
+        {config && total < freeDeliveryAbove && (
           <div className="mb-3 p-3 rounded-lg text-sm text-center font-medium"
             style={{ background: 'rgba(45,122,45,0.08)', color: 'var(--primary)' }}>
             Add ₹{freeDeliveryAbove - total} more for FREE delivery!
@@ -110,12 +103,21 @@ export default function Cart() {
           <div className="flex justify-between"><span style={{ color: 'var(--text-muted)' }}>Subtotal</span><span>₹{total}</span></div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--text-muted)' }}>Delivery</span>
-            <span style={{ color: deliveryCharge === 0 ? 'var(--primary)' : 'var(--text)' }}>
-              {deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}
-            </span>
+            {deliveryCharge === null ? (
+              <span style={{ color: 'var(--text-muted)' }}>Calculating…</span>
+            ) : (
+              <span style={{ color: deliveryCharge === 0 ? 'var(--primary)' : 'var(--text)' }}>
+                {deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}
+              </span>
+            )}
           </div>
           <div className="flex justify-between font-bold text-base pt-2" style={{ borderTop: '1px solid var(--border)' }}>
-            <span>Total</span><span style={{ color: 'var(--primary)' }}>₹{total + deliveryCharge}</span>
+            <span>Total</span>
+            {deliveryCharge === null ? (
+              <span style={{ color: 'var(--text-muted)' }}>Calculating…</span>
+            ) : (
+              <span style={{ color: 'var(--primary)' }}>₹{total + deliveryCharge}</span>
+            )}
           </div>
         </div>
       </div>

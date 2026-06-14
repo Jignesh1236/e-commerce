@@ -354,7 +354,8 @@ export default function ProductDetail() {
                     {cartItem.qty}
                   </span>
                   <button onClick={() => updateQty(product._id, cartItem.qty + 1)}
-                    className="px-5 py-4 flex-1 flex items-center justify-center hover:bg-black/5 active:bg-black/10 transition-colors"
+                    disabled={product.stock > 0 && cartItem.qty >= product.stock}
+                    className="px-5 py-4 flex-1 flex items-center justify-center hover:bg-black/5 active:bg-black/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     style={{ color: 'var(--primary)' }}>
                     <FiPlus size={16} strokeWidth={3} />
                   </button>

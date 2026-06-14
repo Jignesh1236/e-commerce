@@ -15,6 +15,7 @@ export default function AdminProducts() {
   const [editProduct, setEditProduct] = useState(null)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(null)
   const [search, setSearch] = useState('')
   const [removedImages, setRemovedImages] = useState([])
   const [previewFiles, setPreviewFiles] = useState([])
@@ -63,9 +64,14 @@ export default function AdminProducts() {
     setShowForm(true)
   }
 
+  const revokeAllPreviews = (files) => files.forEach(f => URL.revokeObjectURL(f.url))
+
   const handleFiles = (e) => {
     const files = Array.from(e.target.files || [])
-    setPreviewFiles(files.map(f => ({ file: f, url: URL.createObjectURL(f) })))
+    setPreviewFiles(prev => {
+      revokeAllPreviews(prev)
+      return files.map(f => ({ file: f, url: URL.createObjectURL(f) }))
+    })
   }
 
   const save = async () => {
@@ -81,7 +87,7 @@ export default function AdminProducts() {
       if (editing) await api.put(`/products/${editing}`, fd)
       else await api.post('/products', fd)
       setShowForm(false)
-      setPreviewFiles([])
+      setPreviewFiles(prev => { revokeAllPreviews(prev); return [] })
       load()
     } catch (e) {
       alert(e.response?.data?.message || 'Could not save product')
@@ -92,8 +98,15 @@ export default function AdminProducts() {
 
   const del = async (id) => {
     if (!confirm('Delete this product?')) return
-    await api.delete(`/products/${id}`)
-    setProducts(p => p.filter(x => x._id !== id))
+    setDeleting(id)
+    try {
+      await api.delete(`/products/${id}`)
+      setProducts(p => p.filter(x => x._id !== id))
+    } catch {
+      alert('Could not delete product')
+    } finally {
+      setDeleting(null)
+    }
   }
 
   const removeExisting = (url) => {
@@ -189,7 +202,8 @@ export default function AdminProducts() {
                           <FiEdit2 size={14} />
                         </button>
                         <button onClick={() => del(p._id)}
-                          className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center transition-colors"
+                          disabled={deleting === p._id}
+                          className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-wait"
                           style={{ color: 'var(--danger)', background: 'var(--surface-inset)', border: '1px solid var(--border)' }}>
                           <FiTrash2 size={14} />
                         </button>

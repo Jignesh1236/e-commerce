@@ -1,6 +1,6 @@
 import { useWishlist } from '../context/WishlistContext'
 import { useCart } from '../context/CartContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { FiHeart, FiShoppingCart } from 'react-icons/fi'
 import api from '../utils/api'
@@ -11,14 +11,17 @@ export default function Wishlist() {
   const { addItem, items: cartItems } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const prevIdsRef = useRef('')
 
   useEffect(() => {
-    if (!ids.length) { setLoading(false); return }
-    const fetches = ids.map(id => api.get(`/products/${id}`).then(r => r.data.product || r.data).catch(() => null))
-    Promise.all(fetches).then(results => {
-      setProducts(results.filter(Boolean))
-      setLoading(false)
-    })
+    const key = ids.join(',')
+    if (!ids.length) { setLoading(false); setProducts([]); return }
+    if (key === prevIdsRef.current && products.length > 0) return
+    prevIdsRef.current = key
+    setLoading(true)
+    Promise.all(ids.map(id => api.get(`/products/${id}`).then(r => r.data.product || r.data).catch(() => null)))
+      .then(results => setProducts(results.filter(Boolean)))
+      .finally(() => setLoading(false))
   }, [ids.join(',')])
 
   if (!ids.length) return (
@@ -35,7 +38,8 @@ export default function Wishlist() {
       <h1 className="text-xl font-bold mb-4">Wishlist ({ids.length})</h1>
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -49,7 +53,7 @@ export default function Wishlist() {
                     style={{ background: 'var(--border)' }}
                     onError={e => { e.target.src = 'https://placehold.co/100x100?text=?' }} />
                 </Link>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <Link to={`/product/${p._id}`}>
                     <p className="font-semibold text-sm line-clamp-2">{p.name}</p>
                   </Link>
@@ -58,7 +62,7 @@ export default function Wishlist() {
                   </p>
                   <div className="flex gap-2 mt-2">
                     <button onClick={() => addItem(p)} disabled={inCart || p.stock === 0}
-                      className={`sku-btn sku-btn-sm flex-1 ${(inCart || p.stock === 0) ? 'opacity-50' : ''}`}>
+                      className={`sku-btn sku-btn-sm flex-1 ${(inCart || p.stock === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <FiShoppingCart size={13} /> {inCart ? 'In Cart' : p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                     </button>
                     <button onClick={() => toggle(p._id)} className="sku-btn-outline px-3 py-1.5" style={{ borderRadius: 6 }}>

@@ -16,7 +16,7 @@ export default function Dashboard() {
     { label: 'Total Revenue', value: `₹${data?.totalSales || 0}`, icon: FiTrendingUp, color: '#2d7a2d' },
     { label: 'Total Orders', value: data?.totalOrders || 0, icon: FiPackage, color: '#4a90e2' },
     { label: 'New Users Today', value: data?.newUsersToday || 0, icon: FiUsers, color: '#7b68ee' },
-    { label: 'New This Week', value: data?.newUsersWeek || 0, icon: FiUsers, color: '#f5a623' },
+    { label: 'New This Week', value: data?.newUsersThisWeek || 0, icon: FiUsers, color: '#f5a623' },
   ]
 
   return (
@@ -35,11 +35,11 @@ export default function Dashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {data?.lowStock?.length > 0 && (
+        {data?.lowStockProducts?.length > 0 && (
           <div className="sku-card p-4">
             <h2 className="font-bold mb-3 flex items-center gap-2"><FiAlertTriangle style={{ color: '#f5a623' }} /> Low Stock</h2>
             <div className="flex flex-col gap-2">
-              {data.lowStock.map(p => (
+              {data.lowStockProducts.map(p => (
                 <div key={p._id} className="flex justify-between items-center text-sm p-2 rounded-lg" style={{ background: 'var(--surface)' }}>
                   <span className="line-clamp-1 flex-1">{p.name}</span>
                   <span className="font-bold ml-2" style={{ color: '#e05252' }}>{p.stock} left</span>
@@ -49,15 +49,15 @@ export default function Dashboard() {
           </div>
         )}
 
-        {data?.topProducts?.length > 0 && (
+        {data?.topSellingProducts?.length > 0 && (
           <div className="sku-card p-4">
             <h2 className="font-bold mb-3">🏆 Top Selling</h2>
             <div className="flex flex-col gap-2">
-              {data.topProducts.map((p, i) => (
+              {data.topSellingProducts.map((p, i) => (
                 <div key={p._id} className="flex items-center gap-3 text-sm p-2 rounded-lg" style={{ background: 'var(--surface)' }}>
                   <span className="w-5 text-center font-bold" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
                   <span className="flex-1 line-clamp-1">{p.name}</span>
-                  <span className="font-bold" style={{ color: 'var(--primary)' }}>{p.totalSold} sold</span>
+                  <span className="font-bold" style={{ color: 'var(--primary)' }}>{p.totalQty} sold</span>
                 </div>
               ))}
             </div>

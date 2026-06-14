@@ -9,6 +9,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [updatingId, setUpdatingId] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -18,8 +19,15 @@ export default function AdminOrders() {
   useEffect(() => { load() }, [filter])
 
   const updateStatus = async (id, status) => {
-    await api.put(`/orders/${id}/status`, { status })
-    setOrders(prev => prev.map(o => o._id === id ? { ...o, status } : o))
+    setUpdatingId(id)
+    try {
+      await api.put(`/orders/${id}/status`, { status })
+      setOrders(prev => prev.map(o => o._id === id ? { ...o, status } : o))
+    } catch {
+      alert('Could not update status')
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
   const exportExcel = async () => {
@@ -68,7 +76,8 @@ export default function AdminOrders() {
                 <select
                   value={order.status}
                   onChange={e => updateStatus(order._id, e.target.value)}
-                  className="sku-input py-1 text-sm w-auto font-bold"
+                  disabled={updatingId === order._id}
+                  className="sku-input py-1 text-sm w-auto font-bold disabled:opacity-50 disabled:cursor-wait"
                   style={{ color: STATUS_COLORS[order.status], borderColor: STATUS_COLORS[order.status] }}
                 >
                   {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}

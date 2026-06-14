@@ -5,14 +5,22 @@ import StarRating from '../../components/StarRating'
 export default function AdminReviews() {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState(null)
 
   const load = () => api.get('/reviews/all').then(r => setReviews(r.data || [])).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
 
   const del = async (id) => {
     if (!confirm('Delete this review?')) return
-    await api.delete(`/reviews/${id}`)
-    setReviews(r => r.filter(x => x._id !== id))
+    setDeletingId(id)
+    try {
+      await api.delete(`/reviews/${id}`)
+      setReviews(r => r.filter(x => x._id !== id))
+    } catch {
+      alert('Could not delete review')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" /></div>
@@ -33,7 +41,10 @@ export default function AdminReviews() {
                 <p className="text-sm font-medium mb-0.5" style={{ color: 'var(--primary)' }}>{r.productId?.name || 'Product'}</p>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{r.comment || '—'}</p>
               </div>
-              <button onClick={() => del(r._id)} className="sku-btn sku-btn-sm sku-btn-danger shrink-0">Delete</button>
+              <button onClick={() => del(r._id)} disabled={deletingId === r._id}
+                className="sku-btn sku-btn-sm sku-btn-danger shrink-0 disabled:opacity-50">
+                {deletingId === r._id ? 'Deleting…' : 'Delete'}
+              </button>
             </div>
           ))}
         </div>
