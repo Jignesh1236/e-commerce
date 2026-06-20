@@ -2,12 +2,10 @@ services:
   - type: web
     name: store-backend
     runtime: node
-    rootDir: server
+    rootDir: e-commerce/server/server
     buildCommand: npm install
     startCommand: node index.js
     envVars:
-      - key: PORT
-        value: 10000
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
