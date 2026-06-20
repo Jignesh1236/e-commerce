@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Backend API for the online store",
   "main": "index.js",
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
