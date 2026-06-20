@@ -125,6 +125,35 @@ export default function AdminConfig() {
 
       <div className="flex flex-col gap-5">
 
+        {/* ── ORDER SETTINGS ── */}
+        <div className="sku-card p-5" style={{ border: '2px solid rgba(37,211,102,0.35)', background: 'rgba(37,211,102,0.04)' }}>
+          <h2 className="font-extrabold text-base mb-1 flex items-center gap-2">
+            <span className="text-lg">📲</span> Order WhatsApp Number
+          </h2>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+            Customers ke orders <strong>is number pe</strong> WhatsApp se aayenge. Country code ke saath daalo (bina + ke).
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center px-3 py-2.5 rounded-xl text-sm font-bold shrink-0"
+              style={{ background: 'rgba(37,211,102,0.12)', color: '#128C7E', border: '1px solid rgba(37,211,102,0.3)' }}>
+              <span>+</span>
+            </div>
+            <input
+              type="tel"
+              value={config?.whatsappNumber || ''}
+              onChange={e => set('whatsappNumber', e.target.value)}
+              placeholder="919876543210"
+              className="sku-input flex-1 font-mono text-base"
+            />
+          </div>
+          {config?.whatsappNumber && (
+            <p className="text-xs mt-3 px-3 py-2 rounded-xl flex items-center gap-2"
+              style={{ background: 'rgba(37,211,102,0.08)', color: '#128C7E', border: '1px solid rgba(37,211,102,0.2)' }}>
+              ✅ Orders jayenge: <strong>wa.me/{config.whatsappNumber}</strong>
+            </p>
+          )}
+        </div>
+
         {/* ── STORE IDENTITY (Logo + Name) ── */}
         <div className="sku-card p-5">
           <h2 className="font-extrabold text-base mb-4 flex items-center gap-2">
@@ -197,12 +226,6 @@ export default function AdminConfig() {
                 value={config?.tagline}
                 onChange={v => set('tagline', v)}
                 placeholder="e.g. Fresh products, fast delivery"
-              />
-              <Field
-                label="WhatsApp Number (with country code)"
-                value={config?.whatsappNumber}
-                onChange={v => set('whatsappNumber', v)}
-                placeholder="919876543210"
               />
             </div>
           </div>
