@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: #ea580c;
+    --primary-dark: #c2410c;
+    --primary-light: #fb923c;
+    --primary-glow: rgba(234,88,12,0.15);
+    --surface: #faf6f2;
+    --surface-card: #fff8f3;
+    --surface-raised: #fffbf8;
+    --surface-inset: #f0e8e0;
+    --border: #e2d0c0;
+    --border-light: #eeddd0;
+    --text: #1a1208;
+    --text-muted: #7a6050;
+    --text-on-primary: #ffffff;
+    --danger: #c0392b;
+    --warning: #d4820a;
+    --info: #2563eb;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.08);
+    --inner-highlight: inset 0 1px 0 rgba(255,255,255,0.9);
+    --inner-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .dark {
+    --primary: #f97316;
+    --primary-dark: #ea580c;
+    --primary-light: #fb923c;
+    --primary-glow: rgba(249,115,22,0.2);
+    --surface: #1a0d00;
+    --surface-card: #231200;
+    --surface-raised: #2d1800;
+    --surface-inset: #120800;
+    --border: #3d2010;
+    --border-light: #4a2818;
+    --text: #fdf0e8;
+    --text-muted: #a88060;
+    --text-on-primary: #ffffff;
+    --danger: #e57373;
+    --warning: #ffb74d;
+    --info: #64b5f6;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+    --shadow-lg: 0 10px 28px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
+    --inner-highlight: inset 0 1px 0 rgba(255,255,255,0.06);
+    --inner-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body {
+    background-color: var(--surface);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    margin: 0;
+  }
+}
+
+/* ── CARDS ── */
+.sku-card {
+  background: linear-gradient(165deg, var(--surface-raised) 0%, var(--surface-card) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow:
+    var(--inner-highlight),
+    0 1px 0 var(--border-light),
+    var(--shadow-md);
+}
+.dark .sku-card {
+  background: linear-gradient(165deg, var(--surface-raised) 0%, var(--surface-card) 100%);
+  box-shadow:
+    var(--inner-highlight),
+    0 1px 0 var(--border-light),
+    var(--shadow-md);
+}
+.sku-card-flat {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+/* ── BUTTONS ── */
+.sku-btn {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 50%, #dc4a00 100%);
+  border: 1px solid #c2410c;
+  border-bottom-width: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -1px 0 rgba(0,0,0,0.15),
+    0 2px 6px rgba(234,88,12,0.4),
+    0 1px 2px rgba(0,0,0,0.2);
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+.sku-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fb8a30 0%, #f26318 50%, #e55500 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 -1px 0 rgba(0,0,0,0.15),
+    0 3px 8px rgba(234,88,12,0.45),
+    0 1px 3px rgba(0,0,0,0.25);
+  transform: translateY(-1px);
+}
+.sku-btn:active:not(:disabled) {
+  background: linear-gradient(180deg, #dc4a00 0%, #ea580c 100%);
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.25),
+    0 1px 2px rgba(0,0,0,0.2);
+}
+.sku-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.sku-btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+.sku-btn-lg { padding: 13px 28px; font-size: 16px; border-radius: 12px; }
+.sku-btn-danger {
+  background: linear-gradient(180deg, #e05252 0%, #c0392b 50%, #a93226 100%);
+  border-color: #922b21;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 2px 6px rgba(192,57,43,0.4),
+    0 1px 2px rgba(0,0,0,0.2);
+}
+.sku-btn-danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #e86060 0%, #cc4040 50%, #b83030 100%);
+}
+
+/* ── OUTLINE BUTTON ── */
+.sku-btn-outline {
+  background: linear-gradient(180deg, var(--surface-raised) 0%, var(--surface-card) 100%);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.7),
+    var(--shadow-sm);
+  color: var(--primary);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sku-btn-outline:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fff 0%, var(--surface-raised) 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.8),
+    var(--shadow-md);
+}
+.sku-btn-outline:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+.dark .sku-btn-outline {
+  background: linear-gradient(180deg, var(--surface-raised) 0%, var(--surface-card) 100%);
+  border-color: var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), var(--shadow-sm);
+}
+
+/* ── INPUTS ── */
+.sku-input {
+  background: linear-gradient(180deg, var(--surface-inset) 0%, var(--surface-card) 100%);
+  border: 1px solid var(--border);
+  border-top-color: var(--text-muted);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,0.1),
+    inset 0 1px 2px rgba(0,0,0,0.06);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  width: 100%;
+  outline: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.dark .sku-input {
+  background: linear-gradient(180deg, var(--surface-inset) 0%, var(--surface-card) 100%);
+  border-color: var(--border);
+  border-top-color: rgba(0,0,0,0.5);
+  color: var(--text);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.3), inset 0 1px 2px rgba(0,0,0,0.2);
+}
+.sku-input:focus {
+  border-color: var(--primary);
+  border-top-color: var(--primary-dark);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,0.08),
+    0 0 0 3px var(--primary-glow);
+}
+.sku-input::placeholder { color: var(--text-muted); opacity: 0.8; }
+select.sku-input { cursor: pointer; appearance: auto; }
+
+/* ── BADGE ── */
+.sku-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; line-height: 1.4;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── SPACING HELPERS ── */
+.pb-nav { padding-bottom: 76px; }
+@media (min-width: 768px) { .pb-nav { padding-bottom: 24px; } }
+
+/* ── TEXT CLAMP ── */
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeSlideUp 0.25s ease both; }
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-card) 25%, var(--surface-inset) 50%, var(--surface-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 10px;
+}
+
+/* ── SWIPER OVERRIDES ── */
+.swiper-pagination-bullet { background: var(--border); opacity: 1; }
+.swiper-pagination-bullet-active { background: var(--primary); }
