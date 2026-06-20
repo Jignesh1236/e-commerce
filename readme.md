@@ -2,7 +2,7 @@
 > Version 1.0 | Confidential Client Document
 
 ---
- 
+
 ## 📌 Table of Contents
 
 1. [Project Overview](#1-project-overview)
