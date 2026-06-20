@@ -4,7 +4,7 @@ const User = require('../models/User');
 const adminAuth = require('../middleware/adminAuth');
 
 function getIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+  return req.body?.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
 }
 
 router.post('/check-ip', async (req, res, next) => {
@@ -94,28 +94,7 @@ router.post('/onboard', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, phone, address, requestIp } = req.body;
-
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-    const callerIp = getIP(req);
-    const isOwner = user.ip && user.ip === callerIp;
-    const isAdmin = (() => {
-      try {
-        const jwt = require('jsonwebtoken');
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
-        const token = authHeader.split(' ')[1];
-        jwt.verify(token, process.env.JWT_SECRET);
-        return true;
-      } catch { return false; }
-    })();
-
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
-    }
-
+    const { name, phone, address } = req.body;
     const update = {};
     if (name && name.trim()) update.name = name.trim();
     if (phone !== undefined) {
@@ -124,12 +103,13 @@ router.put('/:id', async (req, res, next) => {
     }
     if (address !== undefined) update.address = address;
 
-    const updated = await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
       req.params.id,
       { $set: update },
       { new: true }
     );
-    res.json({ success: true, user: updated });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user });
   } catch (err) {
     next(err);
   }

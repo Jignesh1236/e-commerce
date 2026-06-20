@@ -7,20 +7,15 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-const allowedOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(',').map(o => o.trim())
-  : ['*'];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.options('*', cors({ origin: true, credentials: true }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -68,7 +63,12 @@ async function seedAdmin() {
     const existing = await Admin.findOne();
     if (!existing) {
       await Admin.create({ pin: pinHash, recoveryEmail: email });
-      console.log('Admin account seeded from ADMIN_PIN_HASH');
+      console.log('Admin account created from ADMIN_PIN_HASH');
+    } else if (existing.pin !== pinHash) {
+      existing.pin = pinHash;
+      if (email) existing.recoveryEmail = email;
+      await existing.save();
+      console.log('Admin PIN updated from ADMIN_PIN_HASH');
     }
   } catch (err) {
     console.warn('seedAdmin warning:', err.message);

@@ -2,9 +2,9 @@ services:
   - type: web
     name: store-backend
     runtime: node
-    rootDir: e-commerce/server/server
-    buildCommand: npm install
-    startCommand: node index.js
+    rootDir: e-commerce/server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: MONGO_URI
         sync: false

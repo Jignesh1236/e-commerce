@@ -20,52 +20,8 @@ const getTransporter = () => nodemailer.createTransport({
   }
 });
 
-const loginAttempts = new Map();
-const OTP_REQUEST_TRACK = new Map();
-
-function checkLoginRateLimit(ip) {
-  const now = Date.now();
-  const record = loginAttempts.get(ip) || { count: 0, firstAt: now, blockedUntil: 0 };
-  if (now < record.blockedUntil) {
-    const wait = Math.ceil((record.blockedUntil - now) / 1000);
-    return { blocked: true, wait };
-  }
-  if (now - record.firstAt > 15 * 60 * 1000) {
-    record.count = 0;
-    record.firstAt = now;
-  }
-  record.count += 1;
-  if (record.count > 10) {
-    record.blockedUntil = now + 15 * 60 * 1000;
-    loginAttempts.set(ip, record);
-    return { blocked: true, wait: 900 };
-  }
-  loginAttempts.set(ip, record);
-  return { blocked: false };
-}
-
-function checkOtpRateLimit(ip) {
-  const now = Date.now();
-  const last = OTP_REQUEST_TRACK.get(ip) || 0;
-  if (now - last < 60 * 1000) {
-    return { blocked: true, wait: Math.ceil((60 * 1000 - (now - last)) / 1000) };
-  }
-  OTP_REQUEST_TRACK.set(ip, now);
-  return { blocked: false };
-}
-
-function getClientIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
-}
-
 router.post('/login', async (req, res, next) => {
   try {
-    const ip = getClientIP(req);
-    const rateCheck = checkLoginRateLimit(ip);
-    if (rateCheck.blocked) {
-      return res.status(429).json({ success: false, message: `Too many attempts. Try again in ${rateCheck.wait}s.` });
-    }
-
     const { pin } = req.body;
     if (!pin) return res.status(400).json({ success: false, message: 'PIN is required' });
 
@@ -74,9 +30,6 @@ router.post('/login', async (req, res, next) => {
 
     const isMatch = await bcrypt.compare(String(pin), admin.pin);
     if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid PIN' });
-
-    const record = loginAttempts.get(ip);
-    if (record) { record.count = 0; loginAttempts.set(ip, record); }
 
     const token = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ success: true, token });
@@ -93,14 +46,6 @@ router.post('/forgot-pin', async (req, res, next) => {
     if (!admin) return res.status(404).json({ success: false, message: 'Admin not configured' });
 
     if (action === 'request') {
-      const ip = getClientIP(req);
-      const rateCheck = checkOtpRateLimit(ip);
-      if (rateCheck.blocked) {
-        return res.status(429).json({ success: false, message: `Please wait ${rateCheck.wait}s before requesting another OTP.` });
-      }
-
-      const maskedEmail = admin.recoveryEmail.replace(/(.{2})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(Math.max(b.length, 4)) + c);
-
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       const otpHash = await bcrypt.hash(otpCode, 10);
       const otpExpiry = new Date(Date.now() + 15 * 60 * 1000);
@@ -108,10 +53,6 @@ router.post('/forgot-pin', async (req, res, next) => {
       admin.otpHash = otpHash;
       admin.otpExpiry = otpExpiry;
       await admin.save();
-
-      if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        return res.json({ success: true, message: `SMTP not configured. OTP (dev only): ${otpCode}`, maskedEmail, devOtp: otpCode });
-      }
 
       const transporter = getTransporter();
       await transporter.sendMail({
@@ -122,7 +63,7 @@ router.post('/forgot-pin', async (req, res, next) => {
         html: `<p>Your OTP for PIN reset is: <strong>${otpCode}</strong></p><p>This OTP expires in 15 minutes.</p><p>If you did not request this, ignore this email.</p>`
       });
 
-      return res.json({ success: true, message: 'OTP sent to recovery email', maskedEmail });
+      return res.json({ success: true, message: 'OTP sent to recovery email' });
     }
 
     if (action === 'verify') {
@@ -151,6 +92,29 @@ router.post('/forgot-pin', async (req, res, next) => {
     }
 
     res.status(400).json({ success: false, message: 'Invalid action. Use "request" or "verify".' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/change-pin', adminAuth, async (req, res, next) => {
+  try {
+    const { currentPin, newPin } = req.body;
+    if (!currentPin || !newPin) {
+      return res.status(400).json({ success: false, message: 'Current PIN and new PIN are required' });
+    }
+    if (String(newPin).length < 4) {
+      return res.status(400).json({ success: false, message: 'New PIN must be at least 4 digits' });
+    }
+    const admin = await Admin.findOne();
+    if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
+
+    const isMatch = await bcrypt.compare(String(currentPin), admin.pin);
+    if (!isMatch) return res.status(401).json({ success: false, message: 'Current PIN is incorrect' });
+
+    admin.pin = await bcrypt.hash(String(newPin), 10);
+    await admin.save();
+    res.json({ success: true, message: 'PIN changed successfully' });
   } catch (err) {
     next(err);
   }
