@@ -30,6 +30,7 @@ import AdminReviews from './pages/admin/Reviews'
 import AdminBanners from './pages/admin/Banners'
 import AdminConfig from './pages/admin/Config'
 import AdminCategories from './pages/admin/Categories'
+import AdminSecurity from './pages/admin/Security'
 
 function RequireOnboarding({ children }) {
   const { user, checkIP } = useUser()
@@ -119,6 +120,7 @@ export default function App() {
                     <Route path="categories" element={<AdminCategories />} />
                     <Route path="banners" element={<AdminBanners />} />
                     <Route path="config" element={<AdminConfig />} />
+                    <Route path="security" element={<AdminSecurity />} />
                   </Route>
                   <Route path="*" element={
                     <StoreRoute>

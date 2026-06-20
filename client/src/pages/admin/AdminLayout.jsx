@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { FiGrid, FiPackage, FiUsers, FiStar, FiImage, FiSettings, FiLogOut, FiMenu, FiX, FiShoppingBag, FiTag, FiBell, FiSun, FiMoon } from 'react-icons/fi'
+import { FiGrid, FiPackage, FiUsers, FiStar, FiImage, FiSettings, FiLogOut, FiMenu, FiX, FiShoppingBag, FiTag, FiBell, FiSun, FiMoon, FiLock } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -12,6 +12,7 @@ const NAV = [
   { to: '/admin/reviews',   icon: FiStar,      label: 'Reviews',    emoji: '⭐' },
   { to: '/admin/banners',   icon: FiImage,     label: 'Banners',    emoji: '🖼' },
   { to: '/admin/config',    icon: FiSettings,  label: 'Config',     emoji: '⚙️' },
+  { to: '/admin/security',  icon: FiLock,      label: 'Security',   emoji: '🔐' },
 ]
 
 const PAGE_TITLES = {
@@ -23,6 +24,7 @@ const PAGE_TITLES = {
   '/admin/reviews':    'Reviews',
   '/admin/banners':    'Banners',
   '/admin/config':     'Config',
+  '/admin/security':   'Security',
 }
 
 export default function AdminLayout() {
